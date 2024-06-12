@@ -1,18 +1,24 @@
-from pfhedge.instruments import BrownianStock
-from pfhedge.instruments import EuropeanOption
-from pfhedge.nn import Hedger
-from pfhedge.nn import MultiLayerPerceptron
+mine = "./pfhedge/"
+import os
+import subprocess
 
-# Prepare a derivative to hedge
-derivative = EuropeanOption(BrownianStock(cost=1e-4))
+def generate_uml(directory, project_name, output_format='png'):
+    # Generate .dot files using pyreverse
+    pyreverse_command = f'pyreverse -o dot -p {project_name} {directory}'
+    subprocess.run(pyreverse_command, shell=True)
 
-# Create your hedger
-model = MultiLayerPerceptron()
-hedger = Hedger(
-    model, inputs=["log_moneyness", "expiry_time", "volatility", "prev_hedge"]
-)
+    # Convert .dot files to UML diagrams using PlantUML
+    dot_files = ['classes.dot', 'packages.dot']
+    for dot_file in dot_files:
+        if os.path.exists(dot_file):
+            plantuml_command = f'plantuml {dot_file} -t{output_format}'
+            subprocess.run(plantuml_command, shell=True)
 
-# Fit and price
-hedger.fit(derivative)
-price = hedger.price(derivative)
-print(price)
+    # Cleanup .dot files
+    for dot_file in dot_files:
+        if os.path.exists(dot_file):
+            os.remove(dot_file)
+
+# Replace '/path/to/directory' with the directory you want to analyze
+generate_uml(mine, 'pfhedge')
+
