@@ -1,5 +1,122 @@
-@startuml smthing
-class "This is my class" as class1
-class class2 as "It works this way too"
-class2 *-- "foo/dummy" : use
+@startuml
+
+class Feature {
+    + get(time_step: Optional[int]) : Tensor
+    + of(derivative: BaseDerivative, hedger: Optional[Module] = None) : Feature
+}
+
+abstract class StateIndependentFeature extends Feature {
+    + get(time_step: Optional[int]) : Tensor
+}
+
+class Moneyness extends StateIndependentFeature {
+    + __init__(log: bool) : None
+    + __str__() : str
+    + get(time_step: Optional[int]) : Tensor
+}
+
+class LogMoneyness extends Moneyness {
+    + __init__() : None
+}
+
+class TimeToMaturity extends StateIndependentFeature {
+    + get(time_step: Optional[int]) : Tensor
+}
+
+class ExpiryTime extends TimeToMaturity {
+    + __str__() : str
+}
+
+class UnderlierSpot extends StateIndependentFeature {
+    + __init__(log: bool) : None
+    + __str__() : str
+    + get(time_step: Optional[int]) : Tensor
+}
+
+class UnderlierLogSpot extends UnderlierSpot {
+    + __init__() : None
+}
+
+class Spot extends StateIndependentFeature {
+    + __init__(log: bool) : None
+    + __str__() : str
+    + get(time_step: Optional[int]) : Tensor
+}
+
+class Volatility extends StateIndependentFeature {
+    + get(time_step: Optional[int]) : Tensor
+}
+
+class Variance extends StateIndependentFeature {
+    + get(time_step: Optional[int]) : Tensor
+}
+
+class PrevHedge extends Feature {
+    + get(time_step: Optional[int]) : Tensor
+}
+
+class Barrier extends StateIndependentFeature {
+    + __init__(threshold: float, up: bool) : None
+    + __repr__() : str
+    + get(time_step: Optional[int]) : Tensor
+}
+
+class Zeros extends StateIndependentFeature {
+    + get(time_step: Optional[int]) : Tensor
+}
+
+class Ones extends StateIndependentFeature {
+    + get(time_step: Optional[int]) : Tensor
+}
+
+class Empty extends StateIndependentFeature {
+    + get(time_step: Optional[int]) : Tensor
+}
+
+class MaxMoneyness extends StateIndependentFeature {
+    + __init__(log: bool) : None
+    + __str__() : str
+    + get(time_step: Optional[int]) : Tensor
+}
+
+class MaxLogMoneyness extends MaxMoneyness {
+    + __init__() : None
+}
+
+class FeatureFactory {
+    - _features: Dict[str, Type[Feature]]
+    + __new__(cls, *args, **kwargs) : FeatureFactory
+    + register_feature(name: str, cls: Type[Feature]) : None
+    + get_instance(name: str, **kwargs: Any) : Feature
+}
+
+class FeatureList extends Feature {
+    + __init__(features: List[Union[str, Feature]]) : None
+    + __len__() : int
+    + get(time_step: Optional[int]) : Tensor
+    + __str__() : str
+    + __repr__() : str
+    + of(derivative: BaseDerivative, hedger: Optional[Module] = None) : FeatureList
+    + is_state_dependent() : bool
+}
+
+FeatureFactory --> Feature : creates
+FeatureList "1" --> "*" Feature
+Moneyness --> StateIndependentFeature
+LogMoneyness --> Moneyness
+TimeToMaturity --> StateIndependentFeature
+ExpiryTime --> TimeToMaturity
+UnderlierSpot --> StateIndependentFeature
+UnderlierLogSpot --> UnderlierSpot
+Spot --> StateIndependentFeature
+Volatility --> StateIndependentFeature
+Variance --> StateIndependentFeature
+PrevHedge --> Feature
+Barrier --> StateIndependentFeature
+Zeros --> StateIndependentFeature
+Ones --> StateIndependentFeature
+Empty --> StateIndependentFeature
+MaxMoneyness --> StateIndependentFeature
+MaxLogMoneyness --> MaxMoneyness
+
 @enduml
